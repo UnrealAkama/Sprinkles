@@ -34,7 +34,7 @@ if __name__ == "__main__":
     while True:
         active_module = random.choice(modules)
 
-        for i in range(500):
+        for i in range(1000):
             output = active_module.tick()
             client.put_pixels(output)
 

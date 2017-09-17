@@ -1,7 +1,7 @@
 from sample_pattern import SamplePattern
 import random
 
-class RandomBlinkPattern(SamplePattern):
+class SprinklesPattern(SamplePattern):
 
     def setup(self, size=(6,6,12)):
         self.pixels = []
@@ -13,8 +13,8 @@ class RandomBlinkPattern(SamplePattern):
 
         for i in range(84):
             if i == self.i:
-                choice = random.choice([(128,0,0), (0,128,0), (0,0,128)])
-                results.append(choice)
+                # choice = random.choice([(128,0,0), (0,128,0), (0,0,128)])
+                results.append((random.randint(0,255), random.randint(0,255), random.randint(0,255)))
 
             else:
                 results.append((0,0,0))
