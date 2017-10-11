@@ -5,7 +5,10 @@ import glob, os
 import importlib
 import random
 from sample_pattern import SamplePattern
+import sys
+import time
 
+FPS = 60
 IP_PORT = '127.0.0.1:7890'
 
 if __name__ == "__main__":
@@ -24,6 +27,8 @@ if __name__ == "__main__":
         if 'Pattern' in file:
             new_module = importlib.import_module('patterns.{}'.format(file[:-3]))
             pattern = getattr(new_module, file[:-3])
+            if len(sys.argv) >= 2 and sys.argv[1] not in file:
+                continue
             if issubclass(pattern, SamplePattern):
                 modules.append(pattern())
 

@@ -11,14 +11,14 @@ class SprinklesPattern(SamplePattern):
     def tick(self):
         results = []
 
-        for i in range(84):
+        for i in range(512):
             if i == self.i:
                 # choice = random.choice([(128,0,0), (0,128,0), (0,0,128)])
                 results.append((random.randint(0,255), random.randint(0,255), random.randint(0,255)))
 
             else:
                 results.append((0,0,0))
-        self.i = (self.i + 1) % 84
+        self.i = (self.i + 1) % 512
 
         return results
 
