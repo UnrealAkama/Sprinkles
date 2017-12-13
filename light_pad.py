@@ -17,20 +17,20 @@ def range_c_simple(old_value):
     return range_convert(old_value, -1.0, 1.0, 0.0, 256.0)
 
 def mean(numbers):
-    return float(sum(numbers)) / max(len(numbers), 1)
+    return float(sum(numbers)) / max(len(numbers), 1.0)
 
 class signal():
 
     def __init__(self, signal_buttons, knob_ids):
         self.current_signal = 0
-        self.period=1.0
-        self.amplitude=1.0
-        self.shift=0.0
+        self.period=2.0
+        self.amplitude=2.0
+        self.shift=1.0
         self.signal_buttons = signal_buttons
         self.knob_ids = knob_ids
 
     def update(self, time):
-        return { 0: self.zero, 1: self.flat, 2: self.sin }[self.current_signal](time)
+        return { 0: self.zero, 1: self.flat, 2: self.sin, 3: self.square, 4: self.sawtooth }[self.current_signal](time)
 
     def update_button(self, note_id):
         self.current_signal = self.signal_buttons.index(note_id)
@@ -41,7 +41,7 @@ class signal():
         select_knob = self.knob_ids.index(knob_id)
         knob_to_update = { 0: "period", 1: "amplitude", 2: "shift" }[select_knob]
         print("knob: {} to {}".format(knob_to_update, knob_value))
-        setattr(self, knob_to_update, range_convert(knob_value, 0.0, 127.0, -20.0, 20.0))
+        setattr(self, knob_to_update, range_convert(knob_value, 0.0, 127.0, 1.0, 20.0))
         print("internal knob was set to", getattr(self, knob_to_update))
 
     def get_current_signal(self):
@@ -51,22 +51,27 @@ class signal():
         results = []
         for knob_id, value in zip(self.knob_ids, [self.period, self.amplitude, self.shift]):
             print(knob_id, value)
-            results.append((knob_id, range_convert(value, -20.0, 20.0, 0.0, 127.0)))
+            results.append((knob_id, range_convert(value, 1.0, 20.0, 0.0, 127.0)))
         print(results)
         return results
 
     def sin(self, time):
-        if self.period >= 0:
-            return self.shift + self.amplitude*math.sin(self.period*time)
-        else:
-            return self.shift + self.amplitude*math.sin((1/self.period)*time)
+        return self.shift + self.amplitude*math.sin(self.period*time)
 
     def flat(self, time):
-        return 0.0
+        return 10.0
 
     def zero(self, time):
-        return -1
+        return -1.0
 
+    def square(self, time):
+        return self.shift + self.amplitude*(-1)**math.floor(self.period*time)
+
+    def sawtooth(self, time):
+        if self.period == 0:
+            return self.shift + 2.0 * ((time // 0.00001) - math.floor(0.5 + (time/0.00001)))
+        else:
+            return self.shift + 2.0 * ((time // self.period) - math.floor(0.5 + (time/self.period)))
 
 class wave():
     button_blocks = []
@@ -92,9 +97,9 @@ class wave():
         for i in range(6):
             for k in range(6):
                 for j in range(12):
-                    scalar_x = range_convert(self.x.update(time+j), -1, 1, 0, 1)
-                    scalar_y = range_convert(self.y.update(time+k), -1, 1, 0, 1)
-                    scalar_z = range_convert(self.z.update(time+i), -1, 1, 0, 1)
+                    scalar_x = range_convert(self.x.update(time+j), -1.0, 1.0, 0.0, 1.0)
+                    scalar_y = range_convert(self.y.update(time+k), -1.0, 1.0, 0.0, 1.0)
+                    scalar_z = range_convert(self.z.update(time+i), -1.0, 1.0, 0.0, 1.0)
                     scalar = (scalar_x * 0.333) + (scalar_y * 0.333) + (scalar_z * 0.333)
                     # print(self.r.update(time), range_c_simple(self.r.update(time))*scalar)
                     pixel = (range_c_simple(self.r.update(time))*scalar, range_c_simple(self.g.update(time))*scalar, range_c_simple(self.b.update(time))*scalar)
