@@ -4,7 +4,8 @@ import random
 class WavePattern(SamplePattern):
 
     def setup(self, size=(6,6,12)):
-        self.pixels = [(128,128,128)] * 512
+        super().setup()
+        self.pixels = [(128,128,128)] * self.max_elements
 
         self.i = 0
 

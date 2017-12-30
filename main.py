@@ -11,6 +11,17 @@ import time
 FPS = 60
 IP_PORT = '127.0.0.1:7890'
 
+
+# stolen from SO
+def get_all_subclasses(cls):
+    all_subclasses = []
+
+    for subclass in cls.__subclasses__():
+        all_subclasses.append(subclass)
+        all_subclasses.extend(get_all_subclasses(subclass))
+
+    return all_subclasses
+
 if __name__ == "__main__":
     client = opc.Client(IP_PORT)
     if client.can_connect():
@@ -26,20 +37,20 @@ if __name__ == "__main__":
     for file in glob.glob("*.py"):
         if 'Pattern' in file:
             new_module = importlib.import_module('patterns.{}'.format(file[:-3]))
-            pattern = getattr(new_module, file[:-3])
-            if len(sys.argv) >= 2 and sys.argv[1] not in file:
-                continue
-            if issubclass(pattern, SamplePattern):
-                modules.append(pattern())
 
-    # setup all the modules XXX: probably need x,y,z spacing
-    for module in modules:
-        module.setup()
+
+    print(get_all_subclasses(SamplePattern))
+
+    for pattern in get_all_subclasses(SamplePattern):
+        modules.append(pattern())
 
     while True:
         active_module = random.choice(modules)
 
-        for i in range(1000):
+        print(active_module.__class__.__name__)
+        active_module.setup()
+
+        for i in range(3000):
             output = active_module.tick()
             client.put_pixels(output)
 
