@@ -31,7 +31,11 @@ class ChoasWavePattern(SamplePattern):
 
     def setup(self, size=(6,6,12)):
         super().setup()
-        self.pixels = list(map(lambda x : hsv_to_rgb(random.randint(0, 100) * 0.02, 0.5, 0.3), range(self.max_elements)))
+        self.pixels = list(map(lambda x : hsv_to_rgb(random.randint(0, 100) * 0.02, 0.3, 0.3), range(self.max_elements)))
+
+        self.direction = 1
+        self.step = 0.0006
+
 
         self.i = 0
 
@@ -39,10 +43,13 @@ class ChoasWavePattern(SamplePattern):
         results = []
 
         for i in self.pixels:
-            r = i[0] + random.randint(-3, 3) * 0.02
-            b = min(i[2] + 0.0002, 1.0)
-            results.append((r,i[1],b))
-
+            r = i[2] + random.randint(-1, 1) * 0.02
+            if i[0] >= (1.0 - self.step):
+                self.direction = -1
+            if i[0] <= (self.step):
+                self.direction = 1
+            b = i[0] + (self.direction * self.step)
+            results.append((b, i[1], r))
         self.pixels = results
 
         output = list(map(lambda y : [x * 255.0 for x in (y[0], y[1], y[2])], self.pixels))
