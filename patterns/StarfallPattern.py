@@ -223,3 +223,69 @@ class StarfallPattern(SamplePattern):
 
     def teardown(self):
         pass
+
+class BothStarfallPattern(SamplePattern):
+
+    def setup(self, size=(6,6,12)):
+        super().setup()
+        self.i = 1
+        self.period = 100
+        self.stars = []
+        self.rstars = []
+
+        # this change direction
+        self.offset = 11
+        self.judge = 0
+        self.direction = -1
+
+        # going up
+        self.roffset = 0
+        self.rjudge = 11
+        self.rdirection = 1
+
+
+        self.stars.append((calculate(0, randint(0, 5), randint(0, 5)) + self.offset, next(self.color)))
+        self.rstars.append((calculate(0, randint(0, 5), randint(0, 5)) + self.roffset, next(self.color)))
+
+    def tick(self):
+        if self.i > self.period:
+            self.i = 0
+            # do logic here
+            delete = []
+            for star in range(len(self.stars)):
+                pos = self.stars[star][0]
+                color = self.stars[star][1]
+                if pos % 12 == self.judge:
+                    delete.append(star)
+                else:
+                    self.stars[star] = (pos + self.direction, color)
+
+            for item in delete:
+                self.stars.pop(item)
+
+            for star in range(len(self.rstars)):
+                pos = self.rstars[star][0]
+                color = self.rstars[star][1]
+                if pos % 12 == self.rjudge:
+                    delete.append(star)
+                else:
+                    self.rstars[star] = (pos + self.rdirection, color)
+
+            for item in delete:
+                self.rstars.pop(item)
+            self.stars.append((calculate(0, randint(0, 5), randint(0, 5)) + self.offset, next(self.color)))
+            self.rstars.append((calculate(0, randint(0, 5), randint(0, 5)) + self.roffset, next(self.color)))
+        else:
+            self.i = self.i + 1
+
+        results = [(0,0,0)] * self.max_elements
+
+        for star in self.stars:
+            results[star[0]] = star[1]
+        for star in self.rstars:
+            results[star[0]] = star[1]
+
+        return results
+
+    def teardown(self):
+        pass
