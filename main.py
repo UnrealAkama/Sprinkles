@@ -9,7 +9,7 @@ import sys
 import time
 
 FPS = 60
-IP_PORT = '127.0.0.1:7890'
+IP_PORT = '10.144.1.228:7890'
 
 
 # stolen from SO
@@ -54,13 +54,14 @@ if __name__ == "__main__":
 
         modules.append(pattern())
 
+    print("playing with {} modules".format(len(modules)))
     while True:
         active_module = random.choice(modules)
 
         print(active_module.__class__.__name__)
         active_module.setup()
 
-        for i in range(3000):
+        for i in range(10000):
             output = active_module.tick()
             client.put_pixels(output)
 

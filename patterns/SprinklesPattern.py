@@ -16,8 +16,7 @@ class SprinklesPattern(SamplePattern):
 
         for i in range(self.max_elements):
             if i == self.i:
-                # choice = random.choice([(128,0,0), (0,128,0), (0,0,128)])
-                results.append((random.randint(0,255), random.randint(0,255), random.randint(0,255)))
+                results.append(next(self.color))
 
             else:
                 results.append((0,0,0))
