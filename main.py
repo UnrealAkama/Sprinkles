@@ -39,9 +39,19 @@ if __name__ == "__main__":
             new_module = importlib.import_module('patterns.{}'.format(file[:-3]))
 
 
-    print(get_all_subclasses(SamplePattern))
+
+    names = []
 
     for pattern in get_all_subclasses(SamplePattern):
+        if len(sys.argv) > 1 and sys.argv[1] == pattern.__name__:
+            # this is ugly
+            print("only loading one module: {}".format(pattern.__name__))
+            pat = pattern()
+            pat.setup()
+            while True:
+                output = pat.tick()
+                client.put_pixels(output)
+
         modules.append(pattern())
 
     while True:
