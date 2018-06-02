@@ -2,6 +2,7 @@ from sample_pattern import SamplePattern
 import random
 from colorsys import hsv_to_rgb
 from itertools import cycle
+from random import randint
 
 class WavePattern(SamplePattern):
 
@@ -22,6 +23,35 @@ class WavePattern(SamplePattern):
         self.pixels = results
 
         output = list(map(lambda y : [x * 255.0 for x in hsv_to_rgb(y[0], y[1], y[2])], self.pixels))
+        return output
+
+    def teardown(self):
+        pass
+
+class CycleChoasWavePattern(SamplePattern):
+
+    def setup(self, size=(6,6,12)):
+        super().setup()
+        self.pixels_mods = list(map(lambda x : (randint(-10, 10), randint(-10, 10), randint(-10, 10)), range(self.max_elements)))
+        self.cur_color = next(self.color)
+        self.period = 20
+        self.i = 0
+
+    def tick(self):
+        results = []
+
+        if self.i > self.period:
+            self.i = 0
+            self.cur_color = next(self.color)
+
+        for i in self.pixels_mods:
+            print(i)
+            color = lambda x : i[x] + self.cur_color[x] + random.randint(-1, 1) * 0.02
+            results.append((color(0), color(1), color(2)))
+
+        output = list(map(lambda y : [x for x in (y[0], y[1], y[2])], results))
+
+        self.i = self.i + 1
         return output
 
     def teardown(self):

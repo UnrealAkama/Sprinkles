@@ -9,7 +9,7 @@ import sys
 import time
 
 FPS = 60
-IP_PORT = '10.144.1.228:7890'
+IP_PORT = 'localhost:7890'
 
 
 # stolen from SO
