@@ -1,6 +1,7 @@
 from sample_pattern import SamplePattern
 import operator
 import random
+from abc import ABC, abstractmethod
 
 SIZE = (6,6,12)
 
@@ -33,47 +34,44 @@ def sign(i):
     if i == 0: return 1
     return int(i/abs(i))
 
-def cube(pointA, pointB):
-    # Return a list of points that fall within the volume of the cube
-    # Computation is inclusive of endpoints
-    points = []
+def add_pts(pattern, colors, points=None):
+    # Add 'points' of 'colors' to the pattern (6x6x12 input)
+    
+    if points:
+        for i,pt in enumerate(points):
+            flat_index = get_flat_index(*pt)
+            pattern[flat_index] = colors[i]
 
-    deltas = tuplemanip(operator.sub, pointA, pointB)
-    delta_signs = tuplemanip(sign, deltas)
+        return pattern
 
-    for i in range(0, deltas[0]+delta_signs[0], delta_signs[0]):
-        for j in range(0, deltas[1]+delta_signs[1], delta_signs[1]):
-            for k in range(0, deltas[2]+delta_signs[2], delta_signs[2]):
-                points.append(tuplemanip(operator.sub, pointA, (i,j,k)))
+    else:
+        for i in range(len(colors)):
+            pattern[i] = colors[i]
 
-    return points
+        return pattern
 
-def add_pts(pattern, points, color):
-    # Add 'points' of 'color' to the pattern (6x6x12 input)
-    for i in points:
-        flat_index = get_flat_index(*i)
-        pattern[flat_index] = color
+
+def del_pts(pattern, mask, mask_polarity):
+    # If mask polarity is 1
+    #   Remove all 'mask' exterior points from 'pattern'
+    # Else
+    #   Remove all 'mask' interior points from 'pattern'
+    if mask_polarity:
+        for i in range(SIZE[0]):
+            for j in range(SIZE[1]):
+                for k in range(SIZE[2]):
+                    if (i,j,k) not in mask:
+                        flat_index = get_flat_index(*(i,j,k))
+                        pattern[flat_index] = (0,0,0)
+    else:
+        for i in range(SIZE[0]):
+            for j in range(SIZE[1]):
+                for k in range(SIZE[2]):
+                    if (i,j,k) in mask:
+                        flat_index = get_flat_index(*(i,j,k))
+                        pattern[flat_index] = (0,0,0)
 
     return pattern
-
-def mask(pattern, mask):
-    # Remove all 'mask' points from 'pattern'
-    for i in range(SIZE[0]):
-        for j in range(SIZE[1]):
-            for k in range(SIZE[2]):
-                if (i,j,k) not in mask:
-                    flat_index = get_flat_index(*(i,j,k))
-                    pattern[flat_index] = (0,0,0)
-
-    return pattern
-
-def christmas_fire_pattern():
-    pattern = []
-    for i in range(36):
-        intensity = random.random()
-        pattern += gen_random_string(intensity*.15+.5)
-    return pattern
-
 
 def gen_random_string(intensity):
     n1 = random.randint(1,4)
@@ -87,6 +85,89 @@ def gen_random_string(intensity):
     # print(len(string), n, "\n")
     return string
 
+class LightSpace():
+    def __init__(self, light_objects=[], mask_objects=[]):
+        self.light_objects=light_objects
+        self.mask_objects=mask_objects
+
+    def iter(self):
+        # Start with blank pattern
+        pattern = results = [(0,0,0)] * 6*6*12
+
+        for lo in self.light_objects:
+            lo_iteration = lo.iter()
+            pattern = add_pts(pattern, lo_iteration['colormap'], lo_iteration['pixelmap'])
+
+        # Add all mask points together
+        mask_pts = []
+        for mo in self.mask_objects:
+            mo_iteration = mo.iter()
+            mask_pts += mo_iteration['pixelmap']
+
+        print(mask_pts)
+
+        # Remove mask points
+        pattern = del_pts(pattern, mask_pts, True)
+
+        return pattern
+
+class LightObject(ABC):
+    def __init__(self, period=1, origin=(0,0,0)):
+        self.period = period
+        self.origin = origin
+
+    @abstractmethod
+    def iter(self):
+        # Return colormap
+        # Return pixelmap (optional)
+        pass
+
+class ChristmasFirePattern(LightObject):
+    def __init__(self):
+        super().__init__()
+
+    def iter(self):
+        pattern = []
+        for i in range(36):
+            intensity = random.random()
+            pattern += gen_random_string(intensity*.15+.5)
+        return {
+            'pixelmap': None,
+            'colormap': pattern
+        }
+
+class Cube(LightObject):
+    def __init__(self, pointA, pointB, color):
+        super().__init__()
+        self.pixelmap = Cube.gen_pts(pointA, pointB)
+        self.colormap = [color] * len(self.pixelmap)
+
+    def iter(self):
+        return {'pixelmap':self.pixelmap, 'colormap':self.colormap}
+
+    @staticmethod
+    def gen_pts(pointA, pointB):
+        # Return a list of points that fall within the volume of the cube
+        # Computation is inclusive of endpoints
+        points = []
+
+        deltas = tuplemanip(operator.sub, pointA, pointB)
+        delta_signs = tuplemanip(sign, deltas)
+
+        for i in range(0, deltas[0]+delta_signs[0], delta_signs[0]):
+            for j in range(0, deltas[1]+delta_signs[1], delta_signs[1]):
+                for k in range(0, deltas[2]+delta_signs[2], delta_signs[2]):
+                    points.append(tuplemanip(operator.sub, pointA, (i,j,k)))
+
+        return points
+
+
+star = Cube((2,2,1), (3,3,1), (180,180,0))
+tree_top = Cube((2,2,2), (3,3,3), (120,0,0))
+tree_mid = Cube((1,1,4), (4,4,7), (120,0,0))
+tree_bot = Cube((0,0,8), (5,5,11), (120,0,0))
+cfp = ChristmasFirePattern()
+lightspace = LightSpace([cfp, star], [tree_bot, tree_mid, tree_top, star])
 
 class JinkusPattern(SamplePattern):
 
@@ -99,23 +180,13 @@ class JinkusPattern(SamplePattern):
 
     def tick(self):
         if (self.i % self.period) == 0:
-            # Blank out pattern
-            pattern = results = [(0,0,0)] * self.max_elements
+            # # Add christmas fire pattern
+            # cfp = christmas_fire_pattern()
+            # pattern = cfp
 
-            # Add christmas fire pattern
-            cfp = christmas_fire_pattern()
-            pattern = cfp
+            pattern = lightspace.iter()
 
-            # Create tree pattern
-            tree_pts = cube((2,2,2), (3,3,3)) + cube((1,1,4), (4,4,7)) + cube((0,0,8), (5,5,11))
-            
-            # Apply tree pattern as mask
-            pattern = mask(pattern, tree_pts)
-
-            # Add star pattern
-            pattern = add_pts(pattern, cube((2,2,1), (3,3,1)), (255,255,0))
-
-            self.counter+=1
+            self.counter += 1
             self.last_pattern = pattern
         else:
             pattern = self.last_pattern
