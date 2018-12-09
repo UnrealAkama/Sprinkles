@@ -76,8 +76,8 @@ def christmas_fire_pattern():
 
 
 def gen_random_string(intensity):
-    n1 = random.randint(2,7)
-    n2 = random.randint(4,12-n1)
+    n1 = random.randint(1,4)
+    n2 = random.randint(0,9-n1)
     string = (
         [(0,0,0) for i in range(n1)] +
         [(0,intensity*255,0)]*(n2) + 
