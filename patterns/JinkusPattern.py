@@ -81,7 +81,7 @@ def gen_random_string(intensity):
     string = (
         [(0,0,0) for i in range(n1)] +
         [(0,intensity*255,0)]*(n2) + 
-        [(intensity*255, intensity*220, intensity*200)] * (12-n1-n2)
+        [(intensity*255, intensity*40, 0)] * (12-n1-n2)
         )
 
     # print(len(string), n, "\n")
@@ -94,7 +94,7 @@ class JinkusPattern(SamplePattern):
         super().setup()
         self.i = 0
         self.counter = 0
-        self.period = 200
+        self.period = 400
         self.last_pattern = [(0,0,0)] * self.max_elements
 
     def tick(self):
