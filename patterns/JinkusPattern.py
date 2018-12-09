@@ -104,8 +104,6 @@ class LightSpace():
             mo_iteration = mo.iter()
             mask_pts += mo_iteration['pixelmap']
 
-        print(mask_pts)
-
         # Remove mask points
         pattern = del_pts(pattern, mask_pts, True)
 
